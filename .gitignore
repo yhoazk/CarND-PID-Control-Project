@@ -1,0 +1,8 @@
+.vscode
+build
+tags
+.editorconfig
+*.log
+*.exe
+*~
+*.swp
