@@ -110,14 +110,14 @@ def run(robot, tau, n=100, speed=1.0):
     steer = 0
     # TODO: your code here
     for x in range(n):
+        steer =  -tau * (robot.y) # proportional to the distance to y = 0
+        robot.move(steer, speed)
         x_trajectory.append(robot.x)
-        print("X: " + str(robot.x))
         y_trajectory.append(robot.y)
+        print("X: " + str(robot.x))
         print("Y: " + str(robot.y))
-        steer = 50000* tau * (0-robot.y) # proportional to the distance to y = 0
         print("Steer: "  + str(steer))
-        robot.move(steer, 0.1)
-
+    return x_trajectory, y_trajectory
 x_trajectory, y_trajectory = run(robot, 0.1)
 n = len(x_trajectory)
 
