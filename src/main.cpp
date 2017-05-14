@@ -3,6 +3,7 @@
 #include "json.hpp"
 #include "PID.h"
 #include <math.h>
+#include <ncurses.h>
 
 
 #define MAX_SPEED (30.0f)
@@ -31,21 +32,48 @@ std::string hasData(std::string s)
   return "";
 }
 
+
 int main()
 {
   uWS::Hub h;
-
   PID pid;
   PID pid_th;
   // TODO: Initialize the pid variable.
   //        P   I   D
-  pid.Init(2.0, .03, .223,   1.0,-1.0);
+  pid.Init(2.8,0.012, 0.25,   1.0,-1.0);
   //pid_th.Init(.5,0.0,.7,      0,1);
-
-  h.onMessage([&pid/*, &pid_th*/](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  //initscr();
+  h.onMessage([&pid/*, &pid_th, &dp, &di, &dd*/](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+    double dp =2.0;
+    double di =0.012;
+    double dd =0.25;
+//    double best_cte;
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
+/*    switch (getch()) {
+      case 'A':
+        dp *= 1.1;
+        break;
+      case 'a':
+        dp *= 0.9;
+        break;
+      case 'B':
+        di *= 1.1;
+        break;
+      case 'b':
+        di *= 0.9;
+        break;
+      case 'C':
+        dd *= 1.1;
+        break;
+      case 'c':
+        dd *= 0.9;
+        break;
+      default:
+        break;
+    }
+    pid.update(dp,di,dd);*/
     if (length && length > 2 && data[0] == '4' && data[1] == '2')
     {
       auto s = hasData(std::string(data).substr(0, length));
@@ -65,10 +93,20 @@ int main()
           * NOTE: Feel free to play around with the throttle and speed. Maybe use
           * another PID controller to control the speed!
           */
+
+          if(fabs(cte) > 2.0)
+          {
+            throttle_value *=0.9;
+            dp *=1.01;
+
+            pid.update(dp,di,dd);
+
+          }
+
           pid.UpdateError(cte);
     //      pid_th.UpdateError(MAX_SPEED - speed);
-          throttle_value = .0081*(MAX_SPEED - speed);//pid_th.Response();
-          std::cout << "Throtle: " << throttle_value << std::endl;
+          throttle_value =  0.1;//(1.0/1+fabs(cte))*(MAX_SPEED/10.0 - speed/10);//pid_th.Response();
+          std::cout << "Throtle: " << throttle_value << " dp: " << dp << std::endl;
           steer_value = pid.Response();// * 1.5)/cte;
           // DEBUG
           std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;

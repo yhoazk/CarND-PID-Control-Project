@@ -30,7 +30,7 @@ double PID::sat(double p, double d, double i)
   double ip = -Ki * i;
   cout << " Ki: " << ip;
 
-  if(is_saturated || true)
+  if(is_saturated )
   {
     /* Ignore the integral term */
    ret_val= pp+dp;
@@ -39,9 +39,15 @@ double PID::sat(double p, double d, double i)
   }
   cout << " Pre sat: " << ret_val << endl;
   // Sigmoid saturation
-  ret_val = ((2.0f/(1.0f + exp(-0.35 * ret_val))) -1.0f);
+  ret_val = ((2.0f/(1.0f + exp(-0.45 * ret_val))) -1.0f);
 
   return ret_val;
+}
+
+void PID::update(double p, double i, double d){
+  Kp = p;
+  Ki = i;
+  Kd = d;
 }
 
 void PID::Init(double Kp_, double Ki_, double Kd_, double up_bound, double low_bound)
@@ -85,7 +91,7 @@ double PID::TotalError()
 double PID::Response()
 {
   double t;
-  curr_out = fabs(p_error + d_error + i_error);
+  curr_out = fabs(i_error);
   if (curr_out > Max_ctrl_out)
   {
     is_saturated = true;

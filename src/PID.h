@@ -52,6 +52,7 @@ public:
   void Init(double Kp_, double Ki_, double Kd_, double, double);
 
   double sat(double, double, double);
+  void update(double p, double i, double d);
   /*
   * Update the PID error variables given cross track error.
   */
