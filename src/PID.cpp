@@ -1,21 +1,86 @@
+#include <iostream>
 #include "PID.h"
 
 using namespace std;
 
 /*
 * TODO: Complete the PID class.
+ * TODO: with a pid controller increment the speed in proporionally to the steering
 */
 
 PID::PID() {}
 
 PID::~PID() {}
 
-void PID::Init(double Kp, double Ki, double Kd) {
+/**
+ * This function saturates the output value from the PID controller
+ * to the values accepted by the actuator, in this case the steering
+ * wheel.
+ *  1.0 :: +25°
+ * -1.0 :: -25°
+ */
+
+double PID::sat(double p, double d, double i)
+{
+  double  ret_val =0;
+  if(is_saturated)
+  {
+    /* Ignore the integral term */
+   ret_val= p+d;
+  } else{
+    ret_val = p+i+d;
+  }
+  ret_val = (2.0f/(1.0f + 0.7f * exp(-0.5f * ret_val))) -1.0f;
+  return ret_val;
 }
 
-void PID::UpdateError(double cte) {
+void PID::Init(double Kp_, double Ki_, double Kd_)
+{
+  Kp = Kp_;
+  Ki = Ki_;
+  Kd = Kd_;
+  p_error = 0;
+  d_error = 0;
+  i_error = 0;
+  is_saturated = false;
+  last_cte = 0;
+  sum_cte = 0;
 }
 
-double PID::TotalError() {
+/* How is measured the CTE? */
+/* By testing when the car is  completely out of the road to the left
+ * CTE is -6.0
+ * And completely out of the road to the right
+ * CTE is +6.0 (actually 5.5)
+ * */
+
+void PID::UpdateError(double cte)
+{
+  p_error = -Kp *  cte;
+  std::cout << "KP_e: " << p_error;
+  d_error = -Kd *  (last_cte - cte);
+  std::cout << " KD_e: " << d_error;
+  sum_cte += cte;
+  i_error += -Ki*sum_cte;
+  std::cout << " KI_e: " << i_error << endl;
 }
 
+double PID::TotalError()
+{
+  return 0;
+}
+
+double PID::Response()
+{
+  double t;
+  curr_out = p_error + d_error + i_error;
+  if (curr_out > Max_ctrl_out)
+  {
+    is_saturated = true;
+  } else{
+    is_saturated = false;
+  }
+  t = sat(p_error, d_error, i_error);
+  std::cout << "Ctrl Out: " << curr_out << "is saturated: " << is_saturated << endl;
+  return t;
+}

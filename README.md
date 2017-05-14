@@ -82,3 +82,18 @@ that's just a guess.
 
 One last note here: regardless of the IDE used, every submitted project must
 still be compilable with cmake and make./
+
+### Anti-windup method
+[src](https://www.mathworks.com/help/simulink/slref/pidcontroller.html#br58hc1-1)<br>
+When the output of the controller is saturated and the controller includes
+an integral term the block output holds the specified limit but the integrator
+output continues to grow increasing the difference between block output
+and the sum of the block components. Whitout this mechanism two results are
+possible.
+
+* If the sign of the output never changes the integral part will continue to sum
+ and it eventually overflow.
+* If the sign changes  once the weight sum is beyond the limit of the saturation. it can
+take a long time to discharge the integrator and return to the inbound limits.
+
+

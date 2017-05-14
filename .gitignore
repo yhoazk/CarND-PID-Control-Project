@@ -6,3 +6,6 @@ tags
 *.exe
 *~
 *.swp
+.idea/
+cmake-build-debug/
+build/
