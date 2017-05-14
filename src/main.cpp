@@ -6,7 +6,7 @@
 #include <ncurses.h>
 
 
-#define MAX_SPEED (30.0f)
+#define MAX_SPEED (.12f)
 // for convenience
 using json = nlohmann::json;
 
@@ -44,9 +44,13 @@ int main()
   //pid_th.Init(.5,0.0,.7,      0,1);
   //initscr();
   h.onMessage([&pid/*, &pid_th, &dp, &di, &dd*/](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
-    double dp =2.0;
-    double di =0.012;
-    double dd =0.725;
+    static double dp =3.0;
+    //double dp =.0;
+    static double di =0.012;
+    //double di =0.0;
+    static double dd =.735;
+    static double throttle_value = 0.01;
+   // double dd =2.35;
 //    double best_cte;
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -86,7 +90,6 @@ int main()
           double speed = std::stod(j[1]["speed"].get<std::string>());
           double angle = std::stod(j[1]["steering_angle"].get<std::string>());
           double steer_value;
-          double throttle_value;
           /*
           * TODO: Calculate steering value here, remember the steering value is
           * [-1, 1].
@@ -94,18 +97,22 @@ int main()
           * another PID controller to control the speed!
           */
 
-          if(fabs(cte) > 2.0)
+          if(fabs(cte) > .80 || fabs(steer_value) >0.6)
           {
             throttle_value *=0.9;
-            dp *=1.01;
+//            dp *=1.01;
 
             pid.update(dp,di,dd);
+
+          }
+          else{
+
+            throttle_value =(throttle_value>=MAX_SPEED)?  MAX_SPEED:throttle_value +0.01;
 
           }
 
           pid.UpdateError(cte);
     //      pid_th.UpdateError(MAX_SPEED - speed);
-          throttle_value =  0.1;//(1.0/1+fabs(cte))*(MAX_SPEED/10.0 - speed/10);//pid_th.Response();
           std::cout << "Throtle: " << throttle_value << " dp: " << dp << std::endl;
           steer_value = pid.Response();// * 1.5)/cte;
           // DEBUG

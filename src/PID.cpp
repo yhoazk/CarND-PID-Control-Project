@@ -39,7 +39,7 @@ double PID::sat(double p, double d, double i)
   }
   cout << " Pre sat: " << ret_val << endl;
   // Sigmoid saturation
-  ret_val = ((2.0f/(1.0f + exp(-0.45 * ret_val))) -1.0f);
+  ret_val = ((2.0f/(1.0f + exp(-0.35 * ret_val))) -1.0f);
 
   return ret_val;
 }
