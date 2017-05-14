@@ -46,7 +46,7 @@ int main()
   h.onMessage([&pid/*, &pid_th, &dp, &di, &dd*/](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     double dp =2.0;
     double di =0.012;
-    double dd =0.25;
+    double dd =0.725;
 //    double best_cte;
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
