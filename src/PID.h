@@ -13,7 +13,6 @@ public:
   double d_error;
 
   double last_cte;
-  double sum_cte;
   /*
   * Coefficients
   */ 
@@ -25,9 +24,9 @@ public:
    * [-1,1] for steering
    *
    */
-  const double sat_upper = 1.0;
-  const double sat_lower = -1.0;
-  const double Max_ctrl_out = 10;
+  double sat_upper = 1.0;
+  double sat_lower = -1.0;
+  const double Max_ctrl_out = 50;
 
   /*
    * Saturation flag
@@ -50,7 +49,7 @@ public:
   /*
   * Initialize PID.
   */
-  void Init(double Kp_, double Ki_, double Kd_);
+  void Init(double Kp_, double Ki_, double Kd_, double, double);
 
   double sat(double, double, double);
   /*

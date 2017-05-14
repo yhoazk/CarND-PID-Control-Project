@@ -23,18 +23,28 @@ PID::~PID() {}
 double PID::sat(double p, double d, double i)
 {
   double  ret_val =0;
-  if(is_saturated)
+  double pp = -Kp * p;
+  cout << "Kp: " << pp;
+  double dp = -Kd * d;
+  cout << " Kd: " << dp;
+  double ip = -Ki * i;
+  cout << " Ki: " << ip;
+
+  if(is_saturated || true)
   {
     /* Ignore the integral term */
-   ret_val= p+d;
+   ret_val= pp+dp;
   } else{
-    ret_val = p+i+d;
+    ret_val = pp + dp + ip;
   }
-  ret_val = (2.0f/(1.0f + 0.7f * exp(-0.5f * ret_val))) -1.0f;
+  cout << " Pre sat: " << ret_val << endl;
+  // Sigmoid saturation
+  ret_val = ((2.0f/(1.0f + exp(-0.35 * ret_val))) -1.0f);
+
   return ret_val;
 }
 
-void PID::Init(double Kp_, double Ki_, double Kd_)
+void PID::Init(double Kp_, double Ki_, double Kd_, double up_bound, double low_bound)
 {
   Kp = Kp_;
   Ki = Ki_;
@@ -44,7 +54,8 @@ void PID::Init(double Kp_, double Ki_, double Kd_)
   i_error = 0;
   is_saturated = false;
   last_cte = 0;
-  sum_cte = 0;
+  sat_upper = up_bound;
+  sat_lower = low_bound;
 }
 
 /* How is measured the CTE? */
@@ -56,31 +67,32 @@ void PID::Init(double Kp_, double Ki_, double Kd_)
 
 void PID::UpdateError(double cte)
 {
-  p_error = -Kp *  cte;
-  std::cout << "KP_e: " << p_error;
-  d_error = -Kd *  (last_cte - cte);
-  std::cout << " KD_e: " << d_error;
-  sum_cte += cte;
-  i_error += -Ki*sum_cte;
-  std::cout << " KI_e: " << i_error << endl;
+  p_error = cte;
+  d_error = last_cte - cte;
+  last_cte = cte;
+  i_error += cte;
 }
 
 double PID::TotalError()
 {
+
+  std::cout << " KI_e: " << i_error << endl;
+  std::cout << "KP_e: " << p_error;
+  std::cout << " KD_e: " << d_error;
   return 0;
 }
 
 double PID::Response()
 {
   double t;
-  curr_out = p_error + d_error + i_error;
+  curr_out = fabs(p_error + d_error + i_error);
   if (curr_out > Max_ctrl_out)
   {
     is_saturated = true;
-  } else{
+  } else {
     is_saturated = false;
   }
   t = sat(p_error, d_error, i_error);
-  std::cout << "Ctrl Out: " << curr_out << "is saturated: " << is_saturated << endl;
+  std::cout << "Ctrl Out: " << curr_out << " sat_out: " << t << " is saturated: " << is_saturated << endl;
   return t;
 }
