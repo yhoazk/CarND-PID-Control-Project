@@ -6,18 +6,9 @@ Self-Driving Car Engineer Nanodegree Program
 ## Dependencies
 
 * cmake >= 3.5
- * All OSes: [click here for installation instructions](https://cmake.org/install/)
 * make >= 4.1
-  * Linux: make is installed by default on most Linux distros
-  * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
-  * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
 * gcc/g++ >= 5.4
-  * Linux: gcc / g++ is installed by default on most Linux distros
-  * Mac: same deal as make - [install Xcode command line tools]((https://developer.apple.com/xcode/features/)
-  * Windows: recommend using [MinGW](http://www.mingw.org/)
 * [uWebSockets](https://github.com/uWebSockets/uWebSockets) == 0.13, but the master branch will probably work just fine
-  * Follow the instructions in the [uWebSockets README](https://github.com/uWebSockets/uWebSockets/blob/master/README.md) to get setup for your platform. You can download the zip of the appropriate version from the [releases page](https://github.com/uWebSockets/uWebSockets/releases). Here's a link to the [v0.13 zip](https://github.com/uWebSockets/uWebSockets/archive/v0.13.0.zip).
-  * If you run OSX and have homebrew installed you can just run the ./install-mac.sh script to install this
 * Simulator. You can download these from the [project intro page](https://github.com/udacity/CarND-PID-Control-Project/releases) in the classroom.
 
 ## Basic Build Instructions
@@ -25,63 +16,85 @@ Self-Driving Car Engineer Nanodegree Program
 1. Clone this repo.
 2. Make a build directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
-4. Run it: `./pid`. 
+4. Run it: `./pid`.
 
-## Editor Settings
+## Design choices made in the implemetation of the PID controller
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+In any real application the effect that the actuation will have in the system will be limited
+by physical limits, for example in this case the steering wheel which is limited to `[-1,1]`
+ this was the first design choice.
+ > How to map the controller output to the range of [-1,1]?
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+This implementation is using an adapted sigmoid to map all the possible output to the desired
+range. The equation plays a crucial role in the response as it also defines part of the controllers
+gain.
 
-## Code Style
+Here is the equation used:<br>
+<center>
+![res/sigmoid_eq](/res/sigmoid_eq.png)
+<br>
+<br>
+![](/res/sigmoid_plot.png)
+</center>
 
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
+As shown in the graph the equation maps the controller input to the actuator range.
 
-## Project Instructions and Rubric
+The tunning of the PID parameters was made following the [Ziegler-Nichols method](https://en.wikipedia.org/wiki/Ziegler%E2%80%93Nichols_method), which is in short.
+By trial and error.
 
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
+Here are the general steps:
+1. Set all the gains to `0`
+2. Set `Kp` to the value where the system has an stable oscillation.
+3. Set the `Kp` to 60% of the gain in oscillation value.
+4. Set the `Kd` to 50% of the value of the oscillation period.
+5. Set the `Ki` to 25% of `Kd`
 
-More information is only accessible by people who are already enrolled in Term 2
-of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/f1820894-8322-4bb3-81aa-b26b3c6dcbaf/lessons/e8235395-22dd-4b87-88e0-d108c5e5bbf4/concepts/6a4d8d42-6a04-4aa6-b284-1697c0fd6562)
-for instructions and the project rubric.
+Then after using this euristic method, the car's behavior was not acceptable, so
+further tunning was needed.
 
-## Hints!
+As the car was oscillating and going out the the track, by intuition the gain was increased.
+Now the car was not going out of the road but it was oscillating quite bad in the middle, the
+differential gain was increased.
+As the car does not have time to reach an steady state the integral part is almost ignored.
 
-* You don't have to follow this directory structure, but if you do, your work
-  will span all of the .cpp files here. Keep an eye out for TODOs.
+At the end the final coefficients for the gain were:
 
-## Call for IDE Profiles Pull Requests 
+| `Kp` | `Kd`     | `Ki`     |
+| :------------- | :------------- | :------------- |
+|2.9       | 1.835       | (neglected)  0.012     |
 
-Help your fellow students!
+This values were selected by using a modified twiddle algorithm, in this case
+we cannot measure the goodness of a solution in a short period of time. The modified
+twiddle incremented the gain every time that the CTE went beyond our specified limit of
+2.0.
+If the behavior improved the coefficient was saved and then the next one was tunned.
+After spending some time using this approach it turned out to not converge as fast
+as needed, then we use this euristic.
 
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to we ensure
-that students don't feel pressured to use one IDE or another.
+If the car is oscillating increase the differential gain.
+If the car is not reacting fast increase the gain and/or increase the sigmoid sensitivity.
+The integral term ended-up to be neglected as it was saturating the controller and
+causing delays in the controllers response.
 
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
+Here are two graphs showing the oscillating behavior of the vehicle:
+The geen line is the actuator input and the blue one is the CTE.
 
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
+#### Before
+![](./res/low_dd_835.png)
+#### After
+![](./res/low_dd_1_835.png)
 
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
+Even with all the tunnig the car's behavior can be vastly improved.
+Here are some open points for further work:
+* Add hysteresis to the actuator input, to reduce oscillations in curves.
+* Cascade two PID controllers to increase the range.
+* Improve the saturation method even use an adaptive one.
+* Take into account the delay caused by transport and inertia.
 
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
+Here are video of the car going in the track.
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/Qr_8LVVQnl0/0.jpg)](https://www.youtube.com/watch?v=Qr_8LVVQnl0)
 
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
+
 
 ### Anti-windup method
 [src](https://www.mathworks.com/help/simulink/slref/pidcontroller.html#br58hc1-1)<br>
@@ -95,5 +108,3 @@ possible.
  and it eventually overflow.
 * If the sign changes  once the weight sum is beyond the limit of the saturation. it can
 take a long time to discharge the integrator and return to the inbound limits.
-
-

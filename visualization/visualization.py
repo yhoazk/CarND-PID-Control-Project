@@ -1,25 +1,40 @@
 #!/usr/bin/env python
 
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from matplotlib import style
 import numpy as np
 
+#style.use("fivethirtyeigth")
+
+fig = plt.figure()
+ax1 = fig.add_subplot(1,1,1)
+
+def animate(i):
+    grap_data = open("../pid.log",'r').read()
+    lines = grap_data.split('\n')
+    lines.pop(0)
+    xs = []
+    ys = []
+    sts = []
+    for line in lines:
+        try:
+            t, cte, steer, th, kp,kd,ki, pSat, ctrlout, satOut, saturated = map(lambda x: float(x.split(' ')[1]),  line.strip().split(","))
+            ys.append(cte)
+            xs.append(t)
+            sts.append(steer)
+            if len(xs) > 700:
+                xs.pop(0)
+                ys.pop(0)
+                sts.pop(0)
+        except:
+            pass
+    ax1.clear()
+    ax1.plot(xs, ys)
+    ax1.plot(xs, sts)
 
 
 
-if __name__ == '__main__':
-    plt.ion() ## Note this correction
-    fig=plt.figure()
-    plt.axis([0,1000,0,1])
-
-    i=0
-    x=list()
-    y=list()
-
-    while i < 1000:
-        temp_y=np.random.random();
-        x.append(i);
-        y.append(temp_y);
-        plt.scatter(i,temp_y);
-        i+=1;
-        plt.show()
-        plt.pause(0.0001) #Note this correction
+ani = animation.FuncAnimation(fig, animate, interval=100)
+plt.axis('on')
+plt.show()

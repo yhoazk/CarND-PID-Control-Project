@@ -24,11 +24,11 @@ double PID::sat(double p, double d, double i)
 {
   double  ret_val =0;
   double pp = -Kp * p;
-  cout << "Kp: " << pp;
+  cout << ",Kp: " << pp;
   double dp = -Kd * d;
-  cout << " Kd: " << dp;
+  cout << ",Kd: " << dp;
   double ip = -Ki * i;
-  cout << " Ki: " << ip;
+  cout << ",Ki: " << ip;
 
   if(is_saturated )
   {
@@ -37,9 +37,10 @@ double PID::sat(double p, double d, double i)
   } else{
     ret_val = pp + dp + ip;
   }
-  cout << " Pre sat: " << ret_val << endl;
+  cout << ",Presat: " << ret_val ;
   // Sigmoid saturation
-  ret_val = ((2.0f/(1.0f + exp(-0.35 * ret_val))) -1.0f);
+  ret_val = ((2.0f/(1.0f + exp(-0.4 * ret_val))) -1.0f);
+//  ret_val = fabs(ret_val) > 1.0? ret_val/ret_val : ret_val;
 
   return ret_val;
 }
@@ -99,6 +100,6 @@ double PID::Response()
     is_saturated = false;
   }
   t = sat(p_error, d_error, i_error);
-  std::cout << "Ctrl Out: " << curr_out << " sat_out: " << t << " is saturated: " << is_saturated << endl;
+  std::cout << ",CtrlOut: " << curr_out << ",sat_out: " << t << ",is_saturated: " << is_saturated << endl;
   return t;
 }

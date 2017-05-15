@@ -44,12 +44,13 @@ int main()
   //pid_th.Init(.5,0.0,.7,      0,1);
   //initscr();
   h.onMessage([&pid/*, &pid_th, &dp, &di, &dd*/](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
-    static double dp =3.0;
+    static double dp =2.9;
     //double dp =.0;
     static double di =0.012;
     //double di =0.0;
-    static double dd =.735;
-    static double throttle_value = 0.01;
+    static double dd =1.835;
+    static double throttle_value = 0.1;
+    static int t = 0;
    // double dd =2.35;
 //    double best_cte;
     // "42" at the start of the message means there's a websocket message event.
@@ -113,10 +114,10 @@ int main()
 
           pid.UpdateError(cte);
     //      pid_th.UpdateError(MAX_SPEED - speed);
-          std::cout << "Throtle: " << throttle_value << " dp: " << dp << std::endl;
+          std::cout << ",Th: " << throttle_value;
           steer_value = pid.Response();// * 1.5)/cte;
           // DEBUG
-          std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
+          std::cout << "t: " << t++ << ",CTE: " << cte << ",SteeringValue: " << steer_value;
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;
@@ -149,7 +150,7 @@ int main()
   });
 
   h.onConnection([&h](uWS::WebSocket<uWS::SERVER> ws, uWS::HttpRequest req) {
-    std::cout << "Connected!!!" << std::endl;
+   // std::cout << "Connected!!!" << std::endl;
   });
 
   h.onDisconnection([&h](uWS::WebSocket<uWS::SERVER> ws, int code, char *message, size_t length) {
@@ -160,7 +161,7 @@ int main()
   int port = 4567;
   if (h.listen(port))
   {
-    std::cout << "Listening to port " << port << std::endl;
+    //std::cout << "Listening to port " << port << std::endl;
   }
   else
   {
