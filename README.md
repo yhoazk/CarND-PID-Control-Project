@@ -30,12 +30,12 @@ range. The equation plays a crucial role in the response as it also defines part
 gain.
 
 Here is the equation used:<br>
-<center>
+
 ![res/sigmoid_eq](./res/sigmoid_eq.png)
-<br>
-<br>
+
+
 ![](./res/sigmoid_plot.png)
-</center>
+
 
 As shown in the graph the equation maps the controller input to the actuator range.
 
