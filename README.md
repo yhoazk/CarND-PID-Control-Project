@@ -31,10 +31,10 @@ gain.
 
 Here is the equation used:<br>
 <center>
-![res/sigmoid_eq](/res/sigmoid_eq.png)
+![res/sigmoid_eq](./res/sigmoid_eq.png)
 <br>
 <br>
-![](/res/sigmoid_plot.png)
+![](./res/sigmoid_plot.png)
 </center>
 
 As shown in the graph the equation maps the controller input to the actuator range.
@@ -92,6 +92,8 @@ Here are some open points for further work:
 * Take into account the delay caused by transport and inertia.
 
 Here are video of the car going in the track.
+
+
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/Qr_8LVVQnl0/0.jpg)](https://www.youtube.com/watch?v=Qr_8LVVQnl0)
 
 
